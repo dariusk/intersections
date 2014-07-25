@@ -1,13 +1,19 @@
+var exec = require('child_process').exec;
 var request = require('request');
 var _ = require('underscore');
 _.mixin( require('underscore.deferred') );
-var inflection = require('inflection');
-var Twit = require('twit');
-var T = new Twit(require('./config.js'));
 var wordfilter = require('wordfilter');
 var wordnikKey = require('./permissions.js').key;
 var google = require('google');
 var wf = require('word-freq');
+var conf = require('./config.js');
+var Twitter = require('node-twitter');
+var twitterRestClient = new Twitter.RestClient(
+  conf.consumer_key,
+  conf.consumer_secret,
+  conf.access_token,
+  conf.access_token_secret
+);
 
 var DEBUG = false;
 
@@ -93,8 +99,9 @@ function generate() {
       ctx.fillText(CBA.toUpperCase(), WIDTH*0.5 - mt.width/2, HEIGHT*0.55);
 
 
-      makePng(canvas);
-      dfd.resolve(AB);
+      makePng(canvas).done(function() {
+        dfd.resolve([A, B, C, AB, AC, CB, CBA]);
+      });
     });
   });
 
@@ -144,7 +151,8 @@ function intersect(A, B, C) {
           return stemEl === stemA || stemEl === stemB || stemEl === stemC ||
                   A.indexOf(stemEl.substr(0,4)) > -1 ||
                   B.indexOf(stemEl.substr(0,4)) > -1 ||
-                  C.indexOf(stemEl.substr(0,4)) > -1
+                  C.indexOf(stemEl.substr(0,4)) > -1 ||
+                  el[0].length < 3
         })
         // Now we find the maximum frequency word
         .max(function(el) {
@@ -161,23 +169,30 @@ function intersect(A, B, C) {
 
 function tweet() {
   generate().then(function(myTweet) {
-    if (!wordfilter.blacklisted(myTweet)) {
+    console.log('we made it', myTweet);
+    var allWords = myTweet.join(' ');
+    console.log(allWords, wordfilter.blacklisted(allWords));
+    myTweet = myTweet[0] + ', ' + myTweet[1] + ', ' + myTweet[2] + '.';
       console.log(myTweet);
-      /*
-      T.post('statuses/update', { status: myTweet }, function(err, reply) {
-        if (err) {
-          console.log('error:', err);
-        }
-        else {
-          console.log('reply:', reply);
-        }
+    if (!wordfilter.blacklisted(allWords)) {
+      twitterRestClient.statusesUpdateWithMedia({
+          'status': myTweet,
+          'media[]': './out.png'
+        },
+        function(error, result) {
+          if (error) {
+            console.log('Error: ' + (error.code ? error.code + ' ' + error.message : error.message));
+          }
+          if (result) {
+            console.log(result);
+          }
       });
-      */
     }
   });
 }
 
 function makePng(canvas) {
+  var dfd = new _.Deferred();
   var fs = require('fs'),
       out = fs.createWriteStream(__dirname + '/out.png'),
       stream = canvas.pngStream();
@@ -188,7 +203,11 @@ function makePng(canvas) {
 
   stream.on('end', function(){
     console.log('saved png');
+    exec('convert out.png out.png').on('close', function() {
+      dfd.resolve('done!');
+    });
   });
+  return dfd.promise();
 }
 
 function hsla(h, s, l, a){

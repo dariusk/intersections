@@ -28,6 +28,7 @@
     "cheerio": "~0.12.2",
     "google": "0.3.3",
     "inflection": "~1.2.6",
+    "node-twitter": "https://github.com/dariusk/node-twitter/archive/master.tar.gz",
     "request": "~2.27.0",
     "twit": "~1.1.9",
     "underscore": "~1.5.1",
