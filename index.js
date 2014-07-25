@@ -141,16 +141,17 @@ function intersect(A, B, C) {
         // Filter out all words that share a stem with the input words
         .reject(function(el) {
           var stemEl = wf.stem(el[0])[0];
-          return el.length < 3 || stemEl === stemA || stemEl === stemB || stemEl === stemC ||
-                 stemEl.indexOf(A.substr(0,5)) > -1 ||
-                 stemEl.indexOf(B.substr(0,5)) > -1 ||
-                 stemEl.indexOf(C.substr(0,5)) > -1
+          return stemEl === stemA || stemEl === stemB || stemEl === stemC ||
+                  A.indexOf(stemEl.substr(0,4)) > -1 ||
+                  B.indexOf(stemEl.substr(0,4)) > -1 ||
+                  C.indexOf(stemEl.substr(0,4)) > -1
         })
         // Now we find the maximum frequency word
         .max(function(el) {
           return el[1];
         })
         .value()[0];
+        console.log(result);
       dfd.resolve(result);
     }
 

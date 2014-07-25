@@ -24,9 +24,9 @@
     "node": ">= 0.8.0"
   },
   "dependencies": {
-    "canvas": "^1.1.5",
+    "canvas": "1.1.5",
     "cheerio": "~0.12.2",
-    "google": "^0.3.3",
+    "google": "0.3.3",
     "inflection": "~1.2.6",
     "request": "~2.27.0",
     "twit": "~1.1.9",
