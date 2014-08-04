@@ -154,7 +154,7 @@ function intersect(A, B, C) {
                   B.indexOf(stemEl.substr(0,4)) > -1 ||
                   C.indexOf(stemEl.substr(0,4)) > -1 ||
                   el[0].length < 3 ||
-                  !_.isNull(el[0].match(/\d\d\d\d/))
+                  !_.isNull(el[0].match(/\d\d\d\d/));
         })
         // Now we find the maximum frequency word
         .max(function(el) {
