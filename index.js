@@ -16,7 +16,7 @@ var twitterRestClient = new Twitter.RestClient(
 );
 
 var DEBUG = false;
-
+var TWEET = false;
 var WIDTH = 800,
     HEIGHT = 800;
 var Canvas = require('canvas'),
@@ -146,13 +146,15 @@ function intersect(A, B, C) {
       result = _.chain(frequency)
         .pairs()
         // Filter out all words that share a stem with the input words
+        // Also filter out years
         .reject(function(el) {
           var stemEl = wf.stem(el[0])[0];
           return stemEl === stemA || stemEl === stemB || stemEl === stemC ||
                   A.indexOf(stemEl.substr(0,4)) > -1 ||
                   B.indexOf(stemEl.substr(0,4)) > -1 ||
                   C.indexOf(stemEl.substr(0,4)) > -1 ||
-                  el[0].length < 3
+                  el[0].length < 3 ||
+                  !_.isNull(el[0].match(/\d\d\d\d/))
         })
         // Now we find the maximum frequency word
         .max(function(el) {
@@ -175,18 +177,20 @@ function tweet() {
     myTweet = myTweet[0] + ', ' + myTweet[1] + ', ' + myTweet[2] + '.';
       console.log(myTweet);
     if (!wordfilter.blacklisted(allWords)) {
-      twitterRestClient.statusesUpdateWithMedia({
-          'status': myTweet,
-          'media[]': './out.png'
-        },
-        function(error, result) {
-          if (error) {
-            console.log('Error: ' + (error.code ? error.code + ' ' + error.message : error.message));
-          }
-          if (result) {
-            console.log(result);
-          }
-      });
+      if (TWEET) {
+        twitterRestClient.statusesUpdateWithMedia({
+            'status': myTweet,
+            'media[]': './out.png'
+          },
+          function(error, result) {
+            if (error) {
+              console.log('Error: ' + (error.code ? error.code + ' ' + error.message : error.message));
+            }
+            if (result) {
+              console.log(result);
+            }
+        });
+      }
     }
   });
 }
