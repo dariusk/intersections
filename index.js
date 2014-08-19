@@ -16,7 +16,7 @@ var twitterRestClient = new Twitter.RestClient(
 );
 
 var DEBUG = false;
-var TWEET = false;
+var TWEET = true;
 var WIDTH = 800,
     HEIGHT = 800;
 var Canvas = require('canvas'),
